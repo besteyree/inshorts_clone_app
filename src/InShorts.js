@@ -1,57 +1,49 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import {View, Text, Image, StyleSheet, Dimensions} from 'react-native';
 import SwiperFlatList from 'react-native-swiper-flatlist';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
-const hardcodedNews = [
-  {
-    news_id: 1,
-    title: 'Lorem Ipsum 1',
-    content: `Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
-    It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using 'Content here, content here', making it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for 'lorem ipsum' will uncover many web sites still in their infancy. Various versions have evolved over the years, sometimes by accident, sometimes on purpose (injected humour and the like).
-    `,
-    // content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-    image: require('../assets/1.jpeg'),
-  },
-  {
-    news_id: 2,
-    title: 'Lorem Ipsum 2',
-    content:
-      'Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-    image: require('../assets/2.jpeg'),
-  },
-  {
-    news_id: 3,
-    title: 'Lorem Ipsum 3',
-    content:
-      'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.',
-    image: require('../assets/3.jpeg'),
-  },
-  {
-    news_id: 4,
-    title: 'Lorem Ipsum 4',
-    content:
-      'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
-    image: require('../assets/1.jpeg'),
-  },
-  {
-    news_id: 5,
-    title: 'Lorem Ipsum 5',
-    content:
-      'Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-    image: require('../assets/2.jpeg'),
-  },
-];
+// run api call to get news
+const getNews = async () => {
+  // run api call to get news
+  try {
+    const response = await fetch(
+      'https://gbzyvra19a.execute-api.ap-south-1.amazonaws.com/default/getCurrentNews',
+    );
+    const json = await response.json();
+    // console.log(json);
+    // loop through JSON
+    // in each item, check if image_link starts with //img
+    // if it does, replace it with https://img
+    // return modified JSON
+    json.forEach(item => {
+      console.log(item.image_link)
+      if (item.image_link.startsWith('//img')) {
+        item.image_link = item.image_link.replace('//img', 'https://img');
+      }
+    });
+    return json;
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+};
 
 const InShorts = () => {
+  const [hardcodedNews, setHardcodedNews] = useState([]);
+
+  useEffect(() => {
+    getNews().then(news => setHardcodedNews(news));
+  }, []);
+
   const renderNewsItem = (item, index) => (
     <View key={item.news_id} style={styles.newsItemContainer}>
       <View style={styles.newsItem}>
-        <Image source={item.image} style={styles.image} />
+        <Image source={{uri: item.image_link}} style={styles.image} />
         <Text style={styles.title}>{item.title}</Text>
-        <Text style={styles.description}>{item.content}</Text>
+        <Text style={styles.description}>{item.description}</Text>
       </View>
     </View>
   );
@@ -76,6 +68,7 @@ const styles = StyleSheet.create({
   newsItem: {
     position: 'relative',
     backgroundColor: '#ffffff',
+    color: '#000000',
     borderRadius: 8,
     padding: 16,
     width: SCREEN_WIDTH,
@@ -83,9 +76,12 @@ const styles = StyleSheet.create({
   },
   image: {
     width: '100%',
-    height: 200,
+    //height: '',
+    aspectRatio: 16/9,
     borderRadius: 8,
     marginBottom: 8,
+    // add margin to top
+    marginTop: 8,
   },
   title: {
     fontSize: 18,
@@ -94,6 +90,15 @@ const styles = StyleSheet.create({
   },
   description: {
     fontSize: 16,
+    color: '#000000',
+    // add a bottom margin to the description
+    marginBottom: 8,
+    // add rounded border
+    borderWidth: 1,
+    borderColor: '#000000',
+    borderRadius: 8,
+    // add padding inside the border
+    padding: 8,
   },
 });
 
